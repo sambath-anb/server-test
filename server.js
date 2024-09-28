@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 // local database
 // const DB = process.env.DATABASE_LOCAL;
 
-// hosted database
+// access hosted database
 const DB = process.env.DATABASE.replace(
   '<USERNAME>',
   process.env.DATABASE_USERNAME
@@ -17,7 +17,7 @@ mongoose
     useFindAndModify: false,
   })
   .then((con) => {
-    console.log(con.connections);
+    // console.log(con.connections);
     console.log('DB connection successful');
   });
 
