@@ -1,4 +1,5 @@
 const Tour = require('./../models/tourModel');
+const APIFeatures = require('./../utils/apiFeatures');
 
 // Middleware to check if the tour ID is valid
 exports.checkTourId = (req, res, next, val) => {
@@ -25,62 +26,24 @@ exports.checkBody = (req, res, next) => {
   next();
 };
 
+// Get 5 top tours
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 // Controller to get all tours
 exports.getTours = async (req, res) => {
   try {
-    // FOR REFERENCE ONLY
-    // const tours = await Tour.find({
-    //   duration: 5,
-    //   difficulty: 'easy'
-    // });
-    // const tours = await Tour.find()
-    //   .where('duration')
-    //   .equals(5)
-    //   .where('difficulty')
-    //   .equals('easy');
-    // build query
-    console.log(req.query);
-    const queryObj = { ...req.query };
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
-    excludedFields.forEach((el) => delete queryObj[el]);
-    let query = Tour.find(queryObj);
-
-    // sort results
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort('-createdAt');
-    }
-
-    // Fields Limiting
-    if (req.query.fields) {
-      const fields = req.query.fields.split(', ').join(' ');
-      query = query.select(fields);
-    } else {
-      query = query.select('-__v');
-    }
-
-    // Pagination
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    if (req.query.page) {
-      const numTour = await Tour.countDocuments();
-      if (skip > numTour) {
-        console.log('Error 💥');
-        return res.status(500).json({
-          // 500 Internal Server Error: The server encountered an error
-          status: 'fail',
-          message: 'This page does not exist!',
-        });
-      }
-    }
-    query = query.skip(skip).limit(limit);
-
     // execute query
-    const tours = await query;
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const tours = await features.query;
 
     // send query
     console.log('Success ✅');
