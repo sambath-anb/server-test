@@ -7,13 +7,11 @@ router
   .route('/top-5-tours')
   .get(tourController.aliasTopTours, tourController.getTours);
 
-router
-  .route('/')
-  .get(tourController.getTours)
-  .post(tourController.checkBody, tourController.createTour);
+router.route('/tour-stats').get(tourController.getTourStats);
 
-// param middleware
-router.param('id', tourController.checkTourId);
+router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+
+router.route('/').get(tourController.getTours).post(tourController.createTour);
 
 router
   .route('/:id')

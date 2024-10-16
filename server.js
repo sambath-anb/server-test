@@ -26,6 +26,26 @@ const app = require('./app');
 // check running environment
 console.log(app.get('env'));
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`listen on port ${port}`);
 });
+
+// Handle mongoose connection error
+// DEPRECIATED
+process.on('unhandledRejection', (reason, promise) => {
+  console.log('UnhandledRejection at:', promise, 'reason:', reason);
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+// Handle uncaught exception error
+process.on('uncaughtException', (reason, promise) => {
+  console.log('UncaughtException at:', promise, 'reason:', reason);
+  server.close(() => {
+    process.exit(1);
+  });
+});
+
+// This code will raise uncaught exception
+console.log(x);
