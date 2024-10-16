@@ -48,4 +48,4 @@ process.on('uncaughtException', (reason, promise) => {
 });
 
 // This code will raise uncaught exception
-console.log(x);
+// console.log(x);

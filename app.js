@@ -12,6 +12,11 @@ app.use(express.json());
 // serve static files
 app.use(express.static(`${__dirname}/public`));
 
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  // console.log(req.headers);
+  next();
+});
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
