@@ -1,5 +1,16 @@
 const User = require('../models/userModel');
+const AppError = require('../utils/appError');
 const catchError = require('../utils/catchError');
+
+exports.updateUser = catchError(async (req, res, next) => {
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(
+      new AppError(
+        'This route is not for updating password. Please visit /updatepassword'
+      )
+    );
+  }
+});
 
 exports.getUsers = catchError(async (req, res, next) => {
   const users = await User.find();
