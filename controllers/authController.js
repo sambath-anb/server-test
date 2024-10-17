@@ -18,6 +18,8 @@ exports.signup = catchError(async (req, res, next) => {
         email: req.body.email,
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm,
+        passwordChangedAt: req.body.passwordChangedAt,
+        role: req.body.role,
       });
       const result = await user.save();
 
@@ -91,5 +93,46 @@ exports.protect = catchError(async (req, res, next) => {
   }
 
   // 4) check if user changed password after the jwt was issued
+  if (freshUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError(
+        'The user has changed the password. Please log in again',
+        401
+      )
+    );
+  }
+
+  // grant access
+  req.user = freshUser;
   next();
 });
+
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+    next();
+  };
+};
+
+exports.forgotPassword = catchError(async (req, res, next) => {
+  // 1) get user based on POSTed email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError('There is no user with this email address'));
+  }
+
+  // 2) generate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+
+  // 3) send token to user's email
+  res.json({
+    resetToken,
+  });
+});
+
+exports.resetPassword = catchError(async (req, res, next) => {});
